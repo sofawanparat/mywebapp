@@ -1,0 +1,159 @@
+<!DOCTYPE html><html lang="th"><head><meta charset="utf-8"><title>Recycle Match Community</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f8f2;--card:#fff;--tx:#1d2b22;--mu:#5d6f63;--pr:#2f9e5b;--pr2:#1f7a44;--bd:#dbe7dc;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#111a14;--card:#1a271e;--tx:#e6f0e8;--mu:#93a89a;--bd:#2a3a2f}}
+:root[data-theme=dark]{--bg:#111a14;--card:#1a271e;--tx:#e6f0e8;--mu:#93a89a;--bd:#2a3a2f}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 'Noto Sans Thai',system-ui,sans-serif}
+header{background:var(--pr2);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+header b{font-size:18px}main{max-width:900px;margin:0 auto;padding:14px 14px 90px}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--bd)}
+nav button{white-space:nowrap}
+button,.btn{min-height:44px;padding:8px 16px;border-radius:12px;border:1px solid var(--pr);background:var(--pr);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+button.o{background:transparent;color:var(--pr)}button.r{background:#d64545;border-color:#d64545}
+nav button.o.on{background:var(--pr);color:#fff}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px;margin:10px 0;box-shadow:0 2px 8px #0000000d}
+.g{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.n{font-size:26px;font-weight:700;color:var(--pr)}.mu{color:var(--mu);font-size:14px}
+input,select,textarea{width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font:inherit;margin:4px 0 8px}
+label{font-size:14px;font-weight:600}
+.b{display:inline-block;padding:2px 10px;border-radius:99px;font-size:13px;background:var(--bd)}
+.demo{background:#ffe9a8;color:#5a4500;font-size:12px;padding:1px 8px;border-radius:99px;margin-left:6px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.hero{background:linear-gradient(135deg,#2f9e5b,#1f7a44);color:#fff;border-radius:20px;padding:26px 18px}
+.hero button{background:#fff;color:var(--pr2);border-color:#fff}
+.bar{height:10px;background:var(--pr);border-radius:6px}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 18px;border-radius:12px;display:none;z-index:9}
+</style></head><body>
+<header><b>♻️ Recycle Match Community</b><div id="hr" class="row"></div></header>
+<nav id="nav"></nav><main id="m"></main><div id="toast"></div>
+<script>
+const K='rmc_v1',$=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=p=>p+Math.random().toString(36).slice(2,8).toUpperCase();
+const today=()=>new Date().toISOString().slice(0,10);
+async function H(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('rmc:'+t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+let S,me=null,tab='home',sel=null;
+function save(){try{localStorage.setItem(K,JSON.stringify(S));if(me)localStorage.setItem(K+'u',me.id)}catch(e){}}
+async function seed(){
+ const h=await H('demo1234');
+ const cats=['กระดาษ','กระดาษลัง','ขวดพลาสติก','พลาสติก','ขวดแก้ว','กระป๋องอะลูมิเนียม','โลหะ','เหล็ก','ทองแดง','อุปกรณ์อิเล็กทรอนิกส์','ขยะรีไซเคิลอื่น ๆ'].map((n,i)=>({id:'c'+i,name:n,unit:'กก.',ref:[2,1.5,6,5,1,40,8,7,220,15,3][i],on:true}));
+ const u=(id,n,e,r)=>({id,name:n,email:e,pw:h,role:r,prov:'เชียงใหม่',dist:'เมืองเชียงใหม่',status:'active',demo:true});
+ const sh=(i,n,d,cs)=>({id:'s'+i,owner:'u'+(i+2),name:n,prov:'เชียงใหม่',dist:d,cats:cs,open:'08:00',close:'17:00',status:'approved',on:true,demo:true});
+ S={cats,users:[u('u0','ผู้ดูแล (Demo)','admin@demo.local','admin'),u('u1','สมชาย ผู้ขาย (Demo)','seller@demo.local','seller'),
+  u('u3','ร้าน ABC (Demo)','shop@demo.local','shop'),u('u4','ร้านรุ่งเรือง (Demo)','shop2@demo.local','shop')],
+  shops:[sh(1,'ร้าน ABC รับซื้อของเก่า (Demo)','เมืองเชียงใหม่',{c2:5.5,c3:4,c6:8}),sh(2,'ร้านรุ่งเรือง (Demo)','สารภี',{c0:2.2,c1:1.8,c2:6})],
+  listings:[],offers:[],tx:[],reviews:[],notifs:[],reports:[],logs:[]};
+ S.shops[1].owner='u4';S.shops[0].owner='u3';save()}
+function log(a){S.logs.push({t:new Date().toISOString(),u:me?.email,a})}
+function notify(uid_,msg){S.notifs.push({id:uid(),u:uid_,msg,read:false,t:new Date().toLocaleString('th-TH')})}
+function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2200)}
+const cn=id=>S.cats.find(c=>c.id===id)?.name||'-';
+const real=a=>a.filter(x=>!x.demo);
+const myShop=()=>S.shops.find(s=>s.owner===me.id);
+const dm=x=>x.demo?'<span class="demo">Demo</span>':'';
+function badge(s){const c={'รอการจับคู่':'🟡','มีข้อเสนอ':'🟡','รอตรวจสอบ':'🟡','นัดหมายแล้ว':'🔵','กำลังดำเนินการ':'🔵','รับสินค้าแล้ว':'🔵','สำเร็จ':'🟢','ยกเลิก':'🔴','ปิดรายการ':'⚪'}[s]||'⚪';return `<span class="b">${c} ${esc(s)}</span>`}
+function rating(sid){const r=S.reviews.filter(x=>x.shop===sid);return r.length?(r.reduce((a,b)=>a+b.rating,0)/r.length).toFixed(1):null}
+function match(l){return S.shops.filter(s=>s.status==='approved'&&s.on&&s.cats[l.cat]!=null).map(s=>({s,sc:(s.prov===l.prov?2:0)+(s.dist===l.dist?3:0)+(l.method==='pickup'?0:0)})).sort((a,b)=>b.sc-a.sc)}
+function stats(){const L=real(S.listings),T=real(S.tx),ok=T.filter(t=>t.status==='สำเร็จ');
+ return{users:real(S.users).length,shops:real(S.shops).length,listings:L.length,kg:L.reduce((a,l)=>a+ +l.qty,0),tx:T.length,ok:ok.length,okkg:ok.reduce((a,t)=>a+ +t.qty,0),val:ok.reduce((a,t)=>a+t.total,0)}}
+function bars(data){const mx=Math.max(1,...data.map(d=>d[1]));return data.length?data.map(d=>`<div class="mu">${esc(d[0])} — ${d[1]}</div><div class="bar" style="width:${d[1]/mx*100}%"></div>`).join(''):'<p class="mu">ยังไม่มีข้อมูล</p>'}
+function byCat(arr,f){const m={};arr.forEach(x=>m[cn(x.cat)]=(m[cn(x.cat)]||0)+f(x));return Object.entries(m)}
+
+function navRender(){
+ const T=!me?[['home','หน้าแรก'],['shops','ร้านรับซื้อ'],['login','เข้าสู่ระบบ'],['reg','สมัครสมาชิก']]:
+ me.role==='seller'?[['home','หน้าแรก'],['dash','แดชบอร์ด'],['post','ลงประกาศ'],['my','รายการของฉัน'],['shops','ร้านรับซื้อ'],['tx','ประวัติ/นัดหมาย'],['nt','แจ้งเตือน']]:
+ me.role==='shop'?[['dash','แดชบอร์ด'],['shopset','ตั้งค่าร้าน'],['board','รายการขยะ'],['tx','ธุรกรรม/นัดหมาย'],['nt','แจ้งเตือน']]:
+ [['dash','แดชบอร์ด'],['ashops','จัดการร้าน'],['ausers','สมาชิก'],['acats','ประเภท/ราคา'],['arep','รายงาน/รีวิว'],['alog','Log']];
+ const nu=me?S.notifs.filter(n=>n.u===me.id&&!n.read).length:0;
+ $('#nav').innerHTML=T.map(([k,l])=>`<button class="o ${tab===k?'on':''}" onclick="go('${k}')">${l}${k==='nt'&&nu?' ('+nu+')':''}</button>`).join('');
+ $('#hr').innerHTML=me?`<span class="mu" style="color:#fff">${esc(me.name)}</span><button class="o" style="color:#fff;border-color:#fff;min-height:36px" onclick="logout()">ออกจากระบบ</button>`:''}
+function go(t,s){tab=t;sel=s??null;R()}
+function logout(){log('logout');me=null;try{localStorage.removeItem(K+'u')}catch(e){}tab='home';R()}
+async function doLogin(e){e.preventDefault();const f=e.target,em=f.email.value.trim().toLowerCase(),h=await H(f.pw.value);
+ const u=S.users.find(x=>x.email===em&&x.pw===h);if(!u)return toast('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+ if(u.status!=='active')return toast('บัญชีถูกระงับ');me=u;log('login');save();go('dash')}
+async function doReg(e){e.preventDefault();const f=e.target,em=f.email.value.trim().toLowerCase();
+ if(S.users.some(x=>x.email===em))return toast('อีเมลนี้ถูกใช้แล้ว');if(f.pw.value.length<8)return toast('รหัสผ่านอย่างน้อย 8 ตัว');
+ if(!/^0\d{8,9}$/.test(f.phone.value))return toast('เบอร์โทรไม่ถูกต้อง');
+ const role=f.role.value==='shop'?'shop':'seller';
+ const u={id:uid('u'),name:f.fn.value.trim()+' '+f.ln.value.trim(),email:em,phone:f.phone.value,pw:await H(f.pw.value),role,prov:f.prov.value,dist:f.dist.value,status:'active'};
+ S.users.push(u);if(role==='shop')S.shops.push({id:uid('s'),owner:u.id,name:f.fn.value+' (ตั้งชื่อร้านในตั้งค่า)',prov:u.prov,dist:u.dist,cats:{},open:'08:00',close:'17:00',status:'รอตรวจสอบ',on:false});
+ me=u;log('register');save();toast('สมัครสำเร็จ');go('dash')}
+function postListing(e){e.preventDefault();const f=e.target;if(+f.qty.value<=0)return toast('ระบุน้ำหนักให้ถูกต้อง');
+ S.listings.push({id:uid('L'),seller:me.id,cat:f.cat.value,qty:+f.qty.value,desc:f.desc.value,price:f.ask.checked?null:+f.price.value,prov:f.prov.value,dist:f.dist.value,method:f.method.value,when:f.when.value,status:'รอการจับคู่',date:today(),targets:[]});
+ log('post listing');save();toast('ลงประกาศแล้ว');go('my')}
+function reqShop(lid,sid){const l=S.listings.find(x=>x.id===lid);if(!l.targets.includes(sid)){l.targets.push(sid);const s=S.shops.find(x=>x.id===sid);notify(s.owner,'มีคำขอขายใหม่: '+cn(l.cat)+' '+l.qty+' กก.')}save();toast('ส่งคำขอแล้ว');R()}
+function offer(e,lid){e.preventDefault();const f=e.target,s=myShop();if(!(+f.p.value>0))return toast('ราคาไม่ถูกต้อง');
+ S.offers.push({id:uid('O'),lid,shop:s.id,price:+f.p.value,note:f.note.value,status:'รอ'});const l=S.listings.find(x=>x.id===lid);if(l.status==='รอการจับคู่')l.status='มีข้อเสนอ';
+ notify(l.seller,'มีข้อเสนอราคาใหม่จาก '+s.name);save();toast('ส่งข้อเสนอแล้ว');R()}
+function accept(oid,e){e.preventDefault();const o=S.offers.find(x=>x.id===oid),l=S.listings.find(x=>x.id===o.lid),f=e.target;
+ if(!f.d.value)return toast('เลือกวันนัดหมาย');o.status='ยอมรับ';S.offers.filter(x=>x.lid===l.id&&x.id!==oid).forEach(x=>x.status='ปฏิเสธ');
+ const t={id:'TX-'+Date.now().toString(36).toUpperCase(),lid:l.id,seller:l.seller,shop:o.shop,cat:l.cat,qty:l.qty,price:o.price,total:o.price*l.qty,status:'นัดหมายแล้ว',date:today(),appt:f.d.value+' '+f.t.value,where:l.prov+' '+l.dist,method:l.method};
+ S.tx.push(t);l.status='นัดหมายแล้ว';notify(S.shops.find(x=>x.id===o.shop).owner,'ผู้ขายยอมรับข้อเสนอ '+t.id);save();toast('นัดหมายแล้ว');go('tx')}
+function rejectO(oid){S.offers.find(x=>x.id===oid).status='ปฏิเสธ';save();R()}
+const FLOW=['นัดหมายแล้ว','กำลังดำเนินการ','รับสินค้าแล้ว','สำเร็จ'];
+function adv(id){const t=S.tx.find(x=>x.id===id),i=FLOW.indexOf(t.status);t.status=FLOW[i+1];if(t.status==='สำเร็จ'){const l=S.listings.find(x=>x.id===t.lid);l.status='สำเร็จ'}
+ notify(t.seller,'ธุรกรรม '+t.id+' → '+t.status);save();R()}
+function cancelT(id){const t=S.tx.find(x=>x.id===id);t.status='ยกเลิก';S.listings.find(x=>x.id===t.lid).status='ยกเลิก';save();R()}
+function review(e,id){e.preventDefault();const t=S.tx.find(x=>x.id===id);S.reviews.push({id:uid('R'),tx:id,shop:t.shop,by:me.id,rating:+e.target.r.value,comment:e.target.c.value,date:today(),demo:false});save();toast('ขอบคุณสำหรับรีวิว');R()}
+function report(e){e.preventDefault();const f=e.target;S.reports.push({id:uid('P'),by:me.id,type:f.type.value,desc:f.desc.value,status:'รอตรวจสอบ',date:today(),note:''});save();toast('ส่งรายงานแล้ว');f.reset()}
+
+const provOpts=`<option>เชียงใหม่</option><option>กรุงเทพมหานคร</option><option>ขอนแก่น</option><option>ภูเก็ต</option><option>สงขลา</option>`;
+const empty=t=>`<div class="card mu" style="text-align:center">${t}</div>`;
+function shopCard(s,l){const r=rating(s.id),p=Object.entries(s.cats).map(([c,v])=>cn(c)+' '+v+' บ./กก.').join(', ')||'ยังไม่ระบุ';
+ return `<div class="card"><b>${esc(s.name)}</b>${dm(s)}<div class="mu">📍 ${esc(s.dist)}, ${esc(s.prov)} · ⏰ ${s.open}-${s.close} · ${r?'⭐ '+r+'/5':'ยังไม่มีรีวิว'}</div><div>รับซื้อ: ${esc(p)}</div>
+ ${l?`<button onclick="reqShop('${l.id}','${s.id}')" ${l.targets.includes(s.id)?'disabled':''}>${l.targets.includes(s.id)?'ส่งคำขอแล้ว':'ส่งคำขอขาย'}</button>`:''}</div>`}
+
+const V={
+home(){const s=stats(),n=v=>v?v:0;return `<div class="hero"><h2 style="margin:0 0 6px">จับคู่ขยะรีไซเคิลกับร้านรับซื้อในชุมชน</h2><p>ลงประกาศ ให้ร้านเสนอราคา นัดหมาย แล้วรับเงิน — ง่าย โปร่งใส</p><div class="row"><button onclick="go('${me?'post':'reg'}')">ขายขยะรีไซเคิล</button><button onclick="go('shops')">ค้นหาร้านรับซื้อ</button></div></div>
+ <h3>สถิติระบบ (ข้อมูลจริง)</h3><div class="g"><div class="card"><div class="n">${n(s.users)}</div>สมาชิก</div><div class="card"><div class="n">${n(s.shops)}</div>ร้านรับซื้อ</div><div class="card"><div class="n">${n(s.listings)}</div>รายการขยะ</div><div class="card"><div class="n">${n(s.kg)}</div>กก. เข้าระบบ</div></div>
+ <p class="mu">ตัวเลขนับเฉพาะข้อมูลจริง ไม่รวม Demo Data</p>
+ <h3>วิธีใช้งาน</h3><div class="g">${['1 สมัครและลงประกาศ','2 ระบบจับคู่ร้านที่ตรงเงื่อนไข','3 เลือกข้อเสนอและนัดหมาย','4 ส่งมอบและรีวิว'].map(x=>`<div class="card">${x}</div>`).join('')}</div>
+ <h3>ประเภทที่รองรับ</h3><div class="row">${S.cats.filter(c=>c.on).map(c=>`<span class="b">${c.name}</span>`).join('')}</div>
+ <div class="card" style="margin-top:14px"><b>ทดลองใช้ (Demo)</b><div class="mu">รหัสผ่านทุกบัญชี: demo1234 — seller@demo.local · shop@demo.local · admin@demo.local</div></div>`},
+login(){return `<form class="card" onsubmit="doLogin(event)"><h3>เข้าสู่ระบบ</h3><label>Email</label><input name="email" type="email" required><label>รหัสผ่าน</label><input name="pw" type="password" required><button>เข้าสู่ระบบ</button> <button type="button" class="o" onclick="toast('ต้องตั้งค่าบริการอีเมล (SMTP) ก่อนใช้งาน')">ลืมรหัสผ่าน</button></form>`},
+reg(){return `<form class="card" onsubmit="doReg(event)"><h3>สมัครสมาชิก</h3><div class="g"><div><label>ชื่อ</label><input name="fn" required></div><div><label>นามสกุล</label><input name="ln" required></div><div><label>เบอร์โทร</label><input name="phone" required inputmode="tel"></div><div><label>Email</label><input name="email" type="email" required></div><div><label>รหัสผ่าน (8+ ตัว)</label><input name="pw" type="password" required></div><div><label>ประเภทบัญชี</label><select name="role"><option value="seller">ผู้ขาย</option><option value="shop">ร้านรับซื้อ</option></select></div><div><label>จังหวัด</label><select name="prov">${provOpts}</select></div><div><label>อำเภอ</label><input name="dist" required></div></div><button>สมัครสมาชิก</button></form>`},
+shops(){const q=(sel&&sel.q)||'';const L=S.shops.filter(s=>s.status==='approved'&&s.on&&(!q||JSON.stringify(s).includes(q)||Object.keys(s.cats).some(c=>cn(c).includes(q))));
+ return `<input placeholder="ค้นหาชื่อร้าน / ประเภทขยะ / พื้นที่" value="${esc(q)}" onchange="go('shops',{q:this.value})">`+(L.map(s=>shopCard(s)).join('')||empty('ยังไม่มีร้านรับซื้อในพื้นที่'))+'<p class="mu">แผนที่ร้านต้องตั้งค่าบริการแผนที่ภายนอก (ยังไม่เชื่อมต่อ)</p>'},
+post(){return `<form class="card" onsubmit="postListing(event)"><h3>ลงประกาศขายขยะ</h3><label>ประเภท</label><select name="cat">${S.cats.filter(c=>c.on).map(c=>`<option value="${c.id}">${c.name} (ราคาอ้างอิง ${c.ref} บ./${c.unit})</option>`).join('')}</select><label>น้ำหนัก (กก.)</label><input name="qty" type="number" step="0.1" min="0.1" required><label>รายละเอียด</label><textarea name="desc"></textarea><label><input type="checkbox" name="ask" style="width:auto;min-height:0" checked> ให้ร้านเสนอราคา</label><label>ราคาที่ต้องการ (บ./กก.)</label><input name="price" type="number" step="0.1" min="0"><label>จังหวัด</label><select name="prov">${provOpts}</select><label>อำเภอ</label><input name="dist" required value="${esc(me.dist||'')}"><label>วิธีส่งมอบ</label><select name="method"><option value="pickup">ให้ร้านมารับ</option><option value="dropoff">นำไปส่งที่ร้าน</option></select><label>วัน/เวลาที่สะดวก</label><input name="when"><button>บันทึกประกาศ</button></form>`},
+my(){const L=S.listings.filter(l=>l.seller===me.id);return L.map(l=>{const os=S.offers.filter(o=>o.lid===l.id);return `<div class="card"><b>${cn(l.cat)} ${l.qty} กก.</b> ${badge(l.status)}<div class="mu">${l.price==null?'ให้ร้านเสนอราคา':'ต้องการ '+l.price+' บ./กก.'}</div>
+ ${l.status==='รอการจับคู่'||l.status==='มีข้อเสนอ'?`<h4>ร้านที่ตรงเงื่อนไข</h4>`+match(l).map(m=>shopCard(m.s,l)).join('')||'<p class="mu">ยังไม่มีร้านรับซื้อในพื้นที่</p>':''}
+ ${os.length?'<h4>ข้อเสนอ</h4>':''}${os.map(o=>{const s=S.shops.find(x=>x.id===o.shop);return `<div class="card"><b>${esc(s.name)}</b> ${o.price} บ./กก. = ${(o.price*l.qty).toFixed(0)} บาท ${badge(o.status==='รอ'?'รอดำเนินการ':o.status)}<div class="mu">${esc(o.note)}</div>${o.status==='รอ'&&l.status!=='นัดหมายแล้ว'?`<form onsubmit="accept('${o.id}',event)" class="row"><input type="date" name="d" style="width:auto"><input type="time" name="t" value="10:00" style="width:auto"><button>เลือก+นัดหมาย</button><button type="button" class="o r" onclick="rejectO('${o.id}')">ปฏิเสธ</button></form>`:''}</div>`}).join('')}</div>`}).join('')||empty('ยังไม่มีรายการขยะ')},
+board(){const s=myShop();if(s.status!=='approved')return empty('ร้านของคุณยังไม่ได้รับการอนุมัติจากผู้ดูแล');
+ const L=S.listings.filter(l=>['รอการจับคู่','มีข้อเสนอ'].includes(l.status)&&s.cats[l.cat]!=null);
+ return L.map(l=>{const mine=S.offers.find(o=>o.lid===l.id&&o.shop===s.id);return `<div class="card"><b>${cn(l.cat)} ${l.qty} กก.</b> ${dm(l)}<div class="mu">📍 ${esc(l.dist)}, ${esc(l.prov)} · ${l.method==='pickup'?'ให้ร้านมารับ':'นำมาส่ง'} ${l.targets.includes(s.id)?'· 📨 ส่งคำขอถึงคุณ':''}</div>
+ ${mine?`ข้อเสนอของคุณ: ${mine.price} บ./กก. ${badge(mine.status==='รอ'?'รอดำเนินการ':mine.status)}`:`<form onsubmit="offer(event,'${l.id}')" class="row"><input name="p" type="number" step="0.1" placeholder="บ./กก." style="width:110px"><input name="note" placeholder="เงื่อนไข/หมายเหตุ" style="flex:1"><button>เสนอราคา</button></form>`}</div>`}).join('')||empty('ยังไม่มีรายการขยะที่ตรงกับร้านของคุณ')},
+shopset(){const s=myShop();return `<form class="card" onsubmit="event.preventDefault();const f=event.target;s=myShop();s.name=f.nm.value;s.dist=f.dist.value;s.open=f.o.value;s.close=f.c.value;s.on=f.on.checked;S.cats.forEach(c=>{const v=f['p'+c.id].value;if(v!=='')s.cats[c.id]=+v;else delete s.cats[c.id]});save();toast('บันทึกแล้ว');R()"><h3>ข้อมูลร้าน ${badge(s.status)}</h3><label>ชื่อร้าน</label><input name="nm" value="${esc(s.name)}" required><label>อำเภอ</label><input name="dist" value="${esc(s.dist)}"><div class="row"><input type="time" name="o" value="${s.open}" style="width:auto"><input type="time" name="c" value="${s.close}" style="width:auto"></div><label><input type="checkbox" name="on" style="width:auto;min-height:0" ${s.on?'checked':''}> เปิดรับซื้อ</label><h4>ราคารับซื้อ (เว้นว่าง = ไม่รับ)</h4><div class="g">${S.cats.map(c=>`<div><label>${c.name}</label><input name="p${c.id}" type="number" step="0.1" value="${s.cats[c.id]??''}"></div>`).join('')}</div><button>บันทึก</button></form>`},
+tx(){const seller=me.role==='seller',s=me.role==='shop'?myShop():null;const T=S.tx.filter(t=>seller?t.seller===me.id:t.shop===s.id);
+ return T.map(t=>{const sh=S.shops.find(x=>x.id===t.shop),rv=S.reviews.find(r=>r.tx===t.id);return `<div class="card"><b>${t.id}</b> ${badge(t.status)}${dm(t)}<div>${cn(t.cat)} ${t.qty} กก. × ${t.price} = <b>${t.total.toFixed(0)} บาท</b></div><div class="mu">ร้าน: ${esc(sh?.name)} · นัด ${esc(t.appt)} · ${esc(t.where)}</div>
+ <div class="row">${!seller&&FLOW.indexOf(t.status)>=0&&t.status!=='สำเร็จ'?`<button onclick="adv('${t.id}')">เปลี่ยนเป็น: ${FLOW[FLOW.indexOf(t.status)+1]}</button>`:''}${['นัดหมายแล้ว','กำลังดำเนินการ'].includes(t.status)?`<button class="o r" onclick="cancelT('${t.id}')">ยกเลิก</button>`:''}</div>
+ ${seller&&t.status==='สำเร็จ'&&!rv?`<form onsubmit="review(event,'${t.id}')" class="row"><select name="r" style="width:auto">${[5,4,3,2,1].map(n=>`<option>${n}</option>`).join('')}</select>⭐<input name="c" placeholder="ความคิดเห็น" style="flex:1"><button>รีวิว</button></form>`:''}${rv?`<div class="mu">รีวิว ${'⭐'.repeat(rv.rating)} ${esc(rv.comment)}</div>`:''}</div>`}).join('')||empty('ยังไม่มีประวัติการซื้อขาย')},
+nt(){const N=S.notifs.filter(n=>n.u===me.id).reverse();N.forEach(n=>n.read=true);save();setTimeout(navRender,0);return N.map(n=>`<div class="card">${esc(n.msg)}<div class="mu">${n.t}</div></div>`).join('')||empty('ยังไม่มีการแจ้งเตือน')},
+dash(){if(me.role==='admin')return V.adm();const sel_=me.role==='seller',s=myShop();
+ const T=S.tx.filter(t=>sel_?t.seller===me.id:t.shop===s?.id),ok=T.filter(t=>t.status==='สำเร็จ');
+ const nw=sel_?0:S.listings.filter(l=>['รอการจับคู่','มีข้อเสนอ'].includes(l.status)&&s&&s.cats[l.cat]!=null).length;
+ return `<div class="g"><div class="card"><div class="n">${sel_?S.listings.filter(l=>l.seller===me.id).length:nw}</div>${sel_?'รายการขาย':'คำขอ/รายการใหม่'}</div><div class="card"><div class="n">${T.filter(t=>!['สำเร็จ','ยกเลิก'].includes(t.status)).length}</div>กำลังดำเนินการ</div><div class="card"><div class="n">${ok.length}</div>สำเร็จ</div><div class="card"><div class="n">${ok.reduce((a,t)=>a+t.total,0).toFixed(0)}</div>${sel_?'รายได้รวม (บาท)':'ยอดรับซื้อ (บาท)'}</div><div class="card"><div class="n">${ok.reduce((a,t)=>a+ +t.qty,0)}</div>กก. รีไซเคิลสำเร็จ</div></div>
+ ${!sel_&&s?`<div class="card">สถานะร้าน: ${badge(s.status)} ${rating(s.id)?'⭐ '+rating(s.id):''}</div>`:''}<div class="card"><h4>ประเภทขยะ</h4>${bars(byCat(ok,t=>+t.qty))}</div>
+ <form class="card" onsubmit="report(event)"><h4>แจ้งปัญหา</h4><select name="type"><option>ร้านรับซื้อ</option><option>ผู้ขาย</option><option>รายการประกาศ</option><option>รีวิว</option><option>ปัญหาการซื้อขาย</option></select><textarea name="desc" required placeholder="รายละเอียด"></textarea><button class="o">ส่งรายงาน</button></form>`},
+adm(){const s=stats(),pend=S.shops.filter(x=>x.status==='รอตรวจสอบ').length;
+ return `<div class="g"><div class="card"><div class="n">${s.users}</div>สมาชิก</div><div class="card"><div class="n">${s.shops}</div>ร้าน</div><div class="card"><div class="n">${pend}</div>ร้านรอตรวจสอบ</div><div class="card"><div class="n">${s.listings}</div>ประกาศ</div><div class="card"><div class="n">${s.tx}</div>ธุรกรรม</div><div class="card"><div class="n">${s.ok}</div>สำเร็จ</div><div class="card"><div class="n">${s.okkg}</div>กก. รีไซเคิล</div><div class="card"><div class="n">${s.val.toFixed(0)}</div>มูลค่า (บาท)</div><div class="card"><div class="n">${S.reports.filter(r=>r.status==='รอตรวจสอบ').length}</div>รายงานค้าง</div></div>
+ <div class="card"><h4>ขยะตามประเภท (ข้อมูลจริง)</h4>${bars(byCat(real(S.listings),l=>+l.qty))}</div><p class="mu">แดชบอร์ดนี้ไม่นับ Demo Data</p>`},
+ashops(){return S.shops.map(s=>`<div class="card"><b>${esc(s.name)}</b>${dm(s)} ${badge(s.status)}<div class="mu">${esc(s.dist)}, ${esc(s.prov)}</div><div class="row">${s.status!=='approved'?`<button onclick="setS('${s.id}','approved')">อนุมัติ</button>`:''}${s.status!=='suspended'?`<button class="r" onclick="setS('${s.id}','suspended')">ระงับ</button>`:''}${s.status==='รอตรวจสอบ'?`<button class="o r" onclick="setS('${s.id}','rejected')">ไม่อนุมัติ</button>`:''}</div></div>`).join('')||empty('ยังไม่มีร้าน')},
+ausers(){return S.users.map(u=>`<div class="card"><b>${esc(u.name)}</b>${dm(u)} <span class="b">${u.role}</span> ${badge(u.status==='active'?'สำเร็จ':'ยกเลิก')}<div class="mu">${esc(u.email)}</div>${u.role!=='admin'?`<button class="o" onclick="tgU('${u.id}')">${u.status==='active'?'ระงับบัญชี':'เปิดใช้งาน'}</button>`:''}</div>`).join('')},
+acats(){return S.cats.map(c=>`<div class="card row"><b style="flex:1">${c.name}</b><span class="mu">ราคาอ้างอิง</span><input type="number" step="0.1" value="${c.ref}" style="width:90px" onchange="S.cats.find(x=>x.id==='${c.id}').ref=+this.value;save();toast('อัปเดตราคาอ้างอิงแล้ว')"><button class="o" onclick="S.cats.find(x=>x.id==='${c.id}').on=!S.cats.find(x=>x.id==='${c.id}').on;save();R()">${c.on?'ปิด':'เปิด'}</button></div>`).join('')},
+arep(){return S.reports.map(r=>`<div class="card">${esc(r.type)} ${badge(r.status)}<div>${esc(r.desc)}</div><select onchange="S.reports.find(x=>x.id==='${r.id}').status=this.value;save();R()">${['รอตรวจสอบ','กำลังตรวจสอบ','ดำเนินการแล้ว','ปิดเรื่อง'].map(x=>`<option ${x===r.status?'selected':''}>${x}</option>`).join('')}</select></div>`).join('')||empty('ยังไม่มีรายงานปัญหา')+S.reviews.map(r=>`<div class="card">⭐${r.rating} ${esc(r.comment)} <button class="o r" onclick="S.reviews=S.reviews.filter(x=>x.id!=='${r.id}');save();R()">ลบรีวิว</button></div>`).join('')},
+alog(){return S.logs.slice(-50).reverse().map(l=>`<div class="card mu">${l.t} · ${esc(l.u)} · ${esc(l.a)}</div>`).join('')||empty('ยังไม่มี Log')}
+};
+function setS(id,st){S.shops.find(x=>x.id===id).status=st;const s=S.shops.find(x=>x.id===id);if(st==='approved')s.on=true;notify(s.owner,'สถานะร้านของคุณ: '+st);log('shop '+st);save();R()}
+function tgU(id){const u=S.users.find(x=>x.id===id);u.status=u.status==='active'?'suspended':'active';log('user '+u.status);save();R()}
+function R(){navRender();const guard={dash:1,post:1,my:1,tx:1,nt:1,board:1,shopset:1,ashops:1,ausers:1,acats:1,arep:1,alog:1};
+ if(guard[tab]&&!me)tab='login';
+ const adm={ashops:1,ausers:1,acats:1,arep:1,alog:1};if(adm[tab]&&me?.role!=='admin')tab='home';
+ try{$('#m').innerHTML=V[tab]()}catch(e){$('#m').innerHTML=empty('เกิดข้อผิดพลาด กรุณาลองใหม่')}window.scrollTo(0,0)}
+(async()=>{$('#m').innerHTML='<p class="mu">กำลังโหลด...</p>';try{const r=localStorage.getItem(K);if(r)S=JSON.parse(r)}catch(e){}
+ if(!S)await seed();try{const u=localStorage.getItem(K+'u');if(u)me=S.users.find(x=>x.id===u)||null}catch(e){}
+ if(me)tab='dash';R()})();
+</script></body></html>
